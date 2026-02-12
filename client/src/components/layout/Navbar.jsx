@@ -19,27 +19,18 @@ function Navbar() {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2">
-            <svg className="w-8 h-8" viewBox="0 0 100 100" fill="none">
-              <circle cx="50" cy="50" r="45" fill="#FFC5D3" stroke="#EB77B2" strokeWidth="2"/>
-              <g transform="translate(50,50)">
-                <ellipse cx="0" cy="-18" rx="8" ry="16" fill="#FFC5D3" transform="rotate(0)"/>
-                <ellipse cx="0" cy="-18" rx="8" ry="16" fill="#FFC5D3" transform="rotate(72)"/>
-                <ellipse cx="0" cy="-18" rx="8" ry="16" fill="#FFC5D3" transform="rotate(144)"/>
-                <ellipse cx="0" cy="-18" rx="8" ry="16" fill="#FFC5D3" transform="rotate(216)"/>
-                <ellipse cx="0" cy="-18" rx="8" ry="16" fill="#FFC5D3" transform="rotate(288)"/>
-                <circle cx="0" cy="0" r="6" fill="#EB77B2"/>
-              </g>
-            </svg>
-            <span className="text-xl font-serif font-bold text-sakura-600">
-              Sakura Carts
-            </span>
+            {/* Path starts from / because it is in the public folder */}
+            <img src="/favicon.svg" alt="Sakura Logo" className="w-12 h-12" />
+            <span className="text-xl font-bold">Sakura Carts</span>
           </Link>
 
           {/* Desktop Nav */}
           <div className="hidden md:flex items-center gap-1">
             <NavLink to="/" className={linkClass} end>Home</NavLink>
             <NavLink to="/shop" className={linkClass}>Shop</NavLink>
-            <NavLink to="/admin" className={linkClass}>Admin</NavLink>
+            <NavLink to="/request" className={linkClass}>Request</NavLink>
+            <NavLink to="/faqs" className={linkClass}>FAQs</NavLink>
+            <NavLink to="/contacts" className={linkClass}>Contacts</NavLink>
           </div>
 
           {/* Cart + Mobile Toggle */}
@@ -59,7 +50,7 @@ function Navbar() {
                 </span>
               )}
             </Link>
-
+            <Link to="/admin" className={linkClass}>Account</Link>
             {/* Mobile menu button */}
             <button
               className="md:hidden p-2 text-gray-700"
@@ -81,7 +72,9 @@ function Navbar() {
           <div className="md:hidden pb-4 space-y-1">
             <NavLink to="/" className={linkClass} end onClick={() => setMobileOpen(false)}>Home</NavLink>
             <NavLink to="/shop" className={linkClass} onClick={() => setMobileOpen(false)}>Shop</NavLink>
-            <NavLink to="/admin" className={linkClass} onClick={() => setMobileOpen(false)}>Admin</NavLink>
+            <NavLink to="/request" className={linkClass} onClick={() => setMobileOpen(false)}>Request</NavLink>
+            <NavLink to="/faqs" className={linkClass} onClick={() => setMobileOpen(false)}>FAQs</NavLink>
+            <NavLink to="/contacts" className={linkClass} onClick={() => setMobileOpen(false)}>Contacts</NavLink>
           </div>
         )}
       </div>
