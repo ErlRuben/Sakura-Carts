@@ -37,7 +37,7 @@ function FloatingChat() {
       {/* Floating button */}
       <button
         onClick={() => setOpen(!open)}
-        className="fixed bottom-6 right-6 z-50 w-14 h-14 bg-sakura-400 hover:bg-sakura-500 text-white rounded-full shadow-lg hover:shadow-xl transition-all flex items-center justify-center"
+        className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 w-12 h-12 sm:w-14 sm:h-14 bg-sakura-400 hover:bg-sakura-500 text-white rounded-full shadow-lg hover:shadow-xl transition-all flex items-center justify-center"
       >
         {open ? (
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -57,7 +57,7 @@ function FloatingChat() {
 
       {/* Chat panel */}
       {open && (
-        <div className="fixed bottom-24 right-6 z-50 w-[360px] max-h-[500px] bg-white rounded-2xl shadow-2xl border border-gray-200 flex flex-col overflow-hidden">
+        <div className="fixed bottom-20 right-4 left-4 sm:bottom-24 sm:left-auto sm:right-6 z-50 sm:w-[360px] max-h-[70vh] sm:max-h-[500px] bg-white rounded-2xl shadow-2xl border border-gray-200 flex flex-col overflow-hidden">
           {/* Header */}
           <div className="bg-sakura-400 text-white px-4 py-3 flex items-center justify-between flex-shrink-0">
             <div className="flex items-center gap-2">

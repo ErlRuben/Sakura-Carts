@@ -47,6 +47,15 @@ function ShopPage() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <img src="/banner.png" alt="Sakura Carts Banner" className="w-full h-65 object-cover rounded-2xl mb-8"/>
       <h1 className="text-3xl font-serif font-bold text-dark mb-8">Shop</h1>
+
+      {/* Search bar - visible first on mobile, hidden on desktop */}
+      <div className="mb-4 md:hidden">
+        <SearchBar
+          value={search}
+          onChange={(s) => updateParams('search', s)}
+        />
+      </div>
+
       <div className="flex flex-col md:flex-row gap-8">
         {/* Sidebar */}
         <aside className="w-full md:w-64 flex-shrink-0">
@@ -60,7 +69,7 @@ function ShopPage() {
 
         {/* Main */}
         <div className="flex-1">
-          <div className="mb-6">
+          <div className="mb-6 hidden md:block">
             <SearchBar
               value={search}
               onChange={(s) => updateParams('search', s)}

@@ -6,22 +6,22 @@ function FilterSidebar({ selectedCategory, onCategoryChange, sort, onSortChange 
       {/* Categories */}
       <div>
         <h3 className="font-serif font-bold text-dark mb-3">Categories</h3>
-        <div className="space-y-2">
+        <div className="flex md:flex-col gap-2 overflow-x-auto pb-2 md:pb-0 scrollbar-hide">
           <button
             onClick={() => onCategoryChange('')}
-            className={`block w-full text-left px-3 py-1.5 rounded-md text-sm transition-colors ${
+            className={`whitespace-nowrap px-3 py-1.5 rounded-md text-sm transition-colors md:w-full md:text-left ${
               !selectedCategory
                 ? 'bg-sakura-200 text-sakura-600 font-medium'
                 : 'text-gray-600 hover:bg-sakura-50'
             }`}
           >
-            All Categories
+            All
           </button>
           {CATEGORIES.map((cat) => (
             <button
               key={cat}
               onClick={() => onCategoryChange(cat)}
-              className={`block w-full text-left px-3 py-1.5 rounded-md text-sm transition-colors ${
+              className={`whitespace-nowrap px-3 py-1.5 rounded-md text-sm transition-colors md:w-full md:text-left ${
                 selectedCategory === cat
                   ? 'bg-sakura-200 text-sakura-600 font-medium'
                   : 'text-gray-600 hover:bg-sakura-50'

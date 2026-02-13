@@ -70,10 +70,10 @@ function AdminPage() {
       <h1 className="text-3xl font-serif font-bold text-dark mb-8">Admin Panel</h1>
 
       {/* Tabs */}
-      <div className="flex gap-1 mb-6 bg-sakura-50 rounded-lg p-1 w-fit">
+      <div className="flex gap-1 mb-6 bg-sakura-50 rounded-lg p-1 w-fit overflow-x-auto scrollbar-hide">
         <button
           onClick={() => setTab('products')}
-          className={`px-5 py-2 rounded-md text-sm font-medium transition-colors ${
+          className={`whitespace-nowrap px-5 py-2 rounded-md text-sm font-medium transition-colors ${
             tab === 'products'
               ? 'bg-white text-sakura-600 shadow-sm'
               : 'text-gray-600 hover:text-sakura-400'
@@ -83,7 +83,7 @@ function AdminPage() {
         </button>
         <button
           onClick={() => setTab('orders')}
-          className={`px-5 py-2 rounded-md text-sm font-medium transition-colors ${
+          className={`whitespace-nowrap px-5 py-2 rounded-md text-sm font-medium transition-colors ${
             tab === 'orders'
               ? 'bg-white text-sakura-600 shadow-sm'
               : 'text-gray-600 hover:text-sakura-400'
@@ -93,7 +93,7 @@ function AdminPage() {
         </button>
         <button
           onClick={() => setTab('messages')}
-          className={`relative px-5 py-2 rounded-md text-sm font-medium transition-colors ${
+          className={`relative whitespace-nowrap px-5 py-2 rounded-md text-sm font-medium transition-colors ${
             tab === 'messages'
               ? 'bg-white text-sakura-600 shadow-sm'
               : 'text-gray-600 hover:text-sakura-400'

@@ -29,7 +29,14 @@ function Navbar() {
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2">
             <img src="/favicon.svg" alt="Sakura Logo" className="w-12 h-12" />
-            <span className="text-xl font-bold">Sakura Carts</span>
+            <div className="flex flex-col">
+              <span className="text-xl font-bold leading-tight">Sakura Carts</span>
+              {isAuthenticated && user?.name && (
+                <span className="text-xs text-sakura-400 leading-tight">
+                  Welcome, {user.name}
+                </span>
+              )}
+            </div>
           </Link>
 
           {/* Desktop Nav */}
@@ -67,9 +74,6 @@ function Navbar() {
                   {isAdmin && (
                     <NavLink to="/admin" className={linkClass}>Admin</NavLink>
                   )}
-                  <span className="px-2 text-sm text-gray-500">
-                    {user?.name}
-                  </span>
                   <button
                     onClick={handleLogout}
                     className="px-3 py-2 rounded-md text-sm font-medium text-dark hover:text-sakura-400 hover:bg-sakura-50 transition-colors"
@@ -100,29 +104,30 @@ function Navbar() {
 
         {/* Mobile Nav */}
         {mobileOpen && (
-          <div className="md:hidden pb-4 space-y-1 flex flex-col items-center">
-            <NavLink to="/" className={linkClass} end onClick={() => setMobileOpen(false)}>Shop</NavLink>
-            <NavLink to="/request" className={linkClass} onClick={() => setMobileOpen(false)}>Request</NavLink>
-            <NavLink to="/faqs" className={linkClass} onClick={() => setMobileOpen(false)}>FAQs</NavLink>
-            <NavLink to="/contacts" className={linkClass} onClick={() => setMobileOpen(false)}>Contacts</NavLink>
-            {isAuthenticated ? (
-              <>
-                {isAdmin && (
-                  <NavLink to="/admin" className={linkClass} onClick={() => setMobileOpen(false)}>Admin</NavLink>
-                )}
-                <div className="px-3 py-2 text-sm text-gray-500">
-                  Signed in as <span className="font-medium text-dark">{user?.name}</span>
-                </div>
-                <button
-                  onClick={handleLogout}
-                  className="w-full text-left px-3 py-2 rounded-md text-sm font-medium text-dark hover:text-sakura-400 hover:bg-sakura-50 transition-colors"
-                >
-                  Logout
-                </button>
-              </>
-            ) : (
-              <NavLink to="/login" className={linkClass} onClick={() => setMobileOpen(false)}>Login</NavLink>
-            )}
+          <div className="md:hidden pb-4">
+            <div className="flex gap-1 overflow-x-auto scrollbar-hide pb-2">
+              <NavLink to="/" className={linkClass} end onClick={() => setMobileOpen(false)}>Shop</NavLink>
+              <NavLink to="/request" className={linkClass} onClick={() => setMobileOpen(false)}>Request</NavLink>
+              <NavLink to="/faqs" className={linkClass} onClick={() => setMobileOpen(false)}>FAQs</NavLink>
+              <NavLink to="/contacts" className={linkClass} onClick={() => setMobileOpen(false)}>Contacts</NavLink>
+            </div>
+            <div className="flex items-center gap-1 overflow-x-auto scrollbar-hide pt-1">
+              {isAuthenticated ? (
+                <>
+                  {isAdmin && (
+                    <NavLink to="/admin" className={linkClass} onClick={() => setMobileOpen(false)}>Admin</NavLink>
+                  )}
+                  <button
+                    onClick={handleLogout}
+                    className="whitespace-nowrap px-3 py-2 rounded-md text-sm font-medium text-dark hover:text-sakura-400 hover:bg-sakura-50 transition-colors"
+                  >
+                    Logout
+                  </button>
+                </>
+              ) : (
+                <NavLink to="/login" className={linkClass} onClick={() => setMobileOpen(false)}>Login</NavLink>
+              )}
+            </div>
           </div>
         )}
       </div>
