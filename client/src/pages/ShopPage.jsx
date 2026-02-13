@@ -45,8 +45,8 @@ function ShopPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <img src="/banner.png" alt="Sakura Carts Banner" className="w-full h-65 object-cover rounded-2xl mb-8"/>
       <h1 className="text-3xl font-serif font-bold text-dark mb-8">Shop</h1>
-
       <div className="flex flex-col md:flex-row gap-8">
         {/* Sidebar */}
         <aside className="w-full md:w-64 flex-shrink-0">

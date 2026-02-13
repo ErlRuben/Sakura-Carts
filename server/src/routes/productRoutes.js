@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const upload = require('../config/multer');
+const { protect, requireAdmin } = require('../middleware/auth');
 const {
   getProducts,
   getCategories,
@@ -13,8 +14,8 @@ const {
 router.get('/categories', getCategories);
 router.get('/', getProducts);
 router.get('/:id', getProductById);
-router.post('/', upload.single('image'), createProduct);
-router.put('/:id', upload.single('image'), updateProduct);
-router.delete('/:id', deleteProduct);
+router.post('/', protect, requireAdmin, upload.single('image'), createProduct);
+router.put('/:id', protect, requireAdmin, upload.single('image'), updateProduct);
+router.delete('/:id', protect, requireAdmin, deleteProduct);
 
 module.exports = router;

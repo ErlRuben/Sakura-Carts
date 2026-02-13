@@ -4,7 +4,7 @@ import { CATEGORY_ICONS } from '../../utils/constants';
 function CategoryCard({ category }) {
   return (
     <Link
-      to={`/shop?category=${encodeURIComponent(category)}`}
+      to={`/?category=${encodeURIComponent(category)}`}
       className="group bg-white border border-sakura-100 rounded-xl p-6 text-center
                  hover:shadow-lg hover:border-sakura-300 transition-all duration-300"
     >

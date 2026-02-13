@@ -25,7 +25,7 @@ function ProductDetailPage() {
     return (
       <div className="max-w-7xl mx-auto px-4 py-16 text-center">
         <h2 className="text-2xl font-serif font-bold text-dark">Product not found</h2>
-        <Link to="/shop" className="text-sakura-400 hover:text-sakura-500 mt-4 inline-block">
+        <Link to="/" className="text-sakura-400 hover:text-sakura-500 mt-4 inline-block">
           Back to Shop
         </Link>
       </div>
@@ -50,9 +50,7 @@ function ProductDetailPage() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Breadcrumb */}
       <nav className="text-sm text-gray-500 mb-6">
-        <Link to="/" className="hover:text-sakura-400">Home</Link>
-        <span className="mx-2">/</span>
-        <Link to="/shop" className="hover:text-sakura-400">Shop</Link>
+        <Link to="/" className="hover:text-sakura-400">Shop</Link>
         <span className="mx-2">/</span>
         <span className="text-dark">{product.name}</span>
       </nav>

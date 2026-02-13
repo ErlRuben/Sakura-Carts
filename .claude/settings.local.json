@@ -3,7 +3,10 @@
     "allow": [
       "Bash(powershell -Command:*)",
       "Bash(npm install)",
-      "Bash(cmd /c \"cd /d d:\\\\Sakura-Carts && npm install\")"
+      "Bash(cmd /c \"cd /d d:\\\\Sakura-Carts && npm install\")",
+      "Bash(npm install:*)",
+      "Bash(del \"d:\\\\Sakura-Carts\\\\client\\\\src\\\\pages\\\\MyMessagesPage.jsx\")",
+      "Bash(where.exe:*)"
     ]
   }
 }

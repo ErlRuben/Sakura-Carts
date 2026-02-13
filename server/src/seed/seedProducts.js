@@ -5,6 +5,7 @@ dns.setServers(['8.8.8.8', '8.8.4.4']);
 require('dotenv').config({ path: require('path').join(__dirname, '../../.env') });
 const mongoose = require('mongoose');
 const Product = require('../models/Product');
+const User = require('../models/User');
 
 const products = [
   {
@@ -163,6 +164,18 @@ async function seed() {
 
     const created = await Product.insertMany(products);
     console.log(`Seeded ${created.length} products`);
+
+    // Seed admin user
+    await User.deleteMany({});
+    console.log('Cleared existing users');
+
+    await User.create({
+      name: 'Admin',
+      email: 'admin@sakuracarts.com',
+      password: 'admin123',
+      role: 'admin',
+    });
+    console.log('Created admin user: admin@sakuracarts.com / admin123');
 
     process.exit(0);
   } catch (error) {

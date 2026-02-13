@@ -25,7 +25,7 @@ function CheckoutPage() {
         <h2 className="text-2xl font-serif font-bold text-dark mb-2">
           Nothing to checkout
         </h2>
-        <Link to="/shop" className="text-sakura-400 hover:text-sakura-500">
+        <Link to="/" className="text-sakura-400 hover:text-sakura-500">
           Go shopping
         </Link>
       </div>
@@ -46,7 +46,7 @@ function CheckoutPage() {
           Order ID: <span className="font-mono">{success}</span>
         </p>
         <Link to="/" className="btn-primary">
-          Back to Home
+          Continue Shopping
         </Link>
       </div>
     );

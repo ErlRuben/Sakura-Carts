@@ -39,7 +39,7 @@ function CartSummary() {
         Proceed to Checkout
       </Link>
       <Link
-        to="/shop"
+        to="/"
         className="block text-center text-sm text-sakura-400 hover:text-sakura-500 mt-3"
       >
         Continue Shopping

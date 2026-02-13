@@ -16,7 +16,7 @@ function CartPage() {
         <p className="text-gray-500 mb-6">
           Looks like you haven't added any items yet.
         </p>
-        <Link to="/shop" className="btn-primary">
+        <Link to="/" className="btn-primary">
           Start Shopping
         </Link>
       </div>

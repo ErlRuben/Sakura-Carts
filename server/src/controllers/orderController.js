@@ -58,6 +58,7 @@ const createOrder = async (req, res, next) => {
     }
 
     const order = await Order.create({
+      user: req.user._id,
       items: orderItems,
       shippingInfo,
       totalAmount,
@@ -91,6 +92,16 @@ const getOrders = async (req, res, next) => {
       pages: Math.ceil(total / limitNum),
       total,
     });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// GET /api/orders/my-orders
+const getMyOrders = async (req, res, next) => {
+  try {
+    const orders = await Order.find({ user: req.user._id }).sort({ createdAt: -1 });
+    res.json(orders);
   } catch (error) {
     next(error);
   }
@@ -131,6 +142,7 @@ const updateOrderStatus = async (req, res, next) => {
 module.exports = {
   createOrder,
   getOrders,
+  getMyOrders,
   getOrderById,
   updateOrderStatus,
 };
