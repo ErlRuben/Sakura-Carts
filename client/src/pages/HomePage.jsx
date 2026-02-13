@@ -12,7 +12,7 @@ function HomePage() {
 
       {/* Categories Section */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <h2 className="text-3xl font-serif font-bold text-dark text-center mb-10">
+        <h2 className="text-3xl font-bold text-sakura-400 text-center mb-10">
           Shop by Category
         </h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

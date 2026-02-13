@@ -67,7 +67,7 @@ function AdminPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <h1 className="text-3xl font-serif font-bold text-dark mb-8">Admin Panel</h1>
+      <h1 className="text-3xl font-bold text-sakura-400 mb-8">Admin Panel</h1>
 
       {/* Tabs */}
       <div className="flex gap-1 mb-6 bg-sakura-50 rounded-lg p-1 w-fit overflow-x-auto scrollbar-hide">

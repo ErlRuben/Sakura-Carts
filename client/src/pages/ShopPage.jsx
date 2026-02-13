@@ -46,9 +46,9 @@ function ShopPage() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <img src="/banner.png" alt="Sakura Carts Banner" className="w-full h-65 object-cover rounded-2xl mb-8"/>
-      <h1 className="text-3xl font-serif font-bold text-dark mb-8">Shop</h1>
+      <h1 className="text-3xl font-bold text-sakura-400 mb-8">Shop</h1>
 
-      {/* Search bar - visible first on mobile, hidden on desktop */}
+      {/* Search bar - visible first on mobile,+ hidden on desktop */}
       <div className="mb-4 md:hidden">
         <SearchBar
           value={search}

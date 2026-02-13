@@ -4,7 +4,7 @@ function NotFoundPage() {
   return (
     <div className="max-w-7xl mx-auto px-4 py-20 text-center">
       <p className="text-6xl mb-6">🌸</p>
-      <h1 className="text-4xl font-serif font-bold text-dark mb-4">
+      <h1 className="text-4xl font-bold text-sakura-400 mb-4">
         Page Not Found
       </h1>
       <p className="text-gray-600 mb-8">

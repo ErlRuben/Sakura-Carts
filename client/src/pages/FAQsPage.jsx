@@ -74,7 +74,7 @@ function FAQItem({ faq }) {
 function FAQsPage() {
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <h1 className="text-3xl font-serif font-bold text-dark">
+      <h1 className="text-3xl font-bold text-sakura-400">
         Frequently Asked Questions
       </h1>
       <p className="text-gray-600 mt-2">

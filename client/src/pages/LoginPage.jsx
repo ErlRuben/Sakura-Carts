@@ -32,7 +32,7 @@ function LoginPage() {
   return (
     <div className="max-w-md mx-auto px-4 py-16">
       <div className="bg-white border border-sakura-100 rounded-2xl p-8 shadow-sm">
-        <h1 className="text-2xl font-serif font-bold text-dark text-center">
+        <h1 className="text-2xl font-bold text-sakura-400 text-center">
           Welcome Back
         </h1>
         <p className="text-gray-500 text-center mt-1">

@@ -27,7 +27,7 @@ function ContactsPage() {
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <h1 className="text-3xl font-serif font-bold text-dark">Contact Us</h1>
+      <h1 className="text-3xl font-bold text-sakura-400">Contact Us</h1>
       <p className="text-gray-600 mt-2">
         Have a question, suggestion, or just want to say hello? We&apos;d love to
         hear from you.

@@ -38,7 +38,7 @@ function RequestPage() {
       <div className="max-w-2xl mx-auto px-4 py-16 text-center">
         <div className="bg-sakura-50 rounded-2xl p-10">
           <span className="text-5xl">🌸</span>
-          <h2 className="text-2xl font-serif font-bold text-dark mt-4">
+          <h2 className="text-2xl font-bold text-sakura-400 mt-4">
             Request Submitted!
           </h2>
           <p className="text-gray-600 mt-3">
@@ -62,7 +62,7 @@ function RequestPage() {
 
   return (
     <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <h1 className="text-3xl font-serif font-bold text-dark">Item Request</h1>
+      <h1 className="text-3xl font-bold text-sakura-400">Item Request</h1>
       <p className="text-gray-600 mt-2">
         Can&apos;t find what you&apos;re looking for? Submit a request and we&apos;ll
         try to source it for you from Japan.

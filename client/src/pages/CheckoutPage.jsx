@@ -22,7 +22,7 @@ function CheckoutPage() {
   if (items.length === 0 && !success) {
     return (
       <div className="max-w-7xl mx-auto px-4 py-20 text-center">
-        <h2 className="text-2xl font-serif font-bold text-dark mb-2">
+        <h2 className="text-2xl font-bold text-sakura-400 mb-2">
           Nothing to checkout
         </h2>
         <Link to="/" className="text-sakura-400 hover:text-sakura-500">
@@ -36,7 +36,7 @@ function CheckoutPage() {
     return (
       <div className="max-w-2xl mx-auto px-4 py-20 text-center">
         <div className="text-6xl mb-6">🌸</div>
-        <h2 className="text-3xl font-serif font-bold text-dark mb-4">
+        <h2 className="text-3xl font-bold text-sakura-400 mb-4">
           Order Placed Successfully!
         </h2>
         <p className="text-gray-600 mb-2">
@@ -79,7 +79,7 @@ function CheckoutPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <h1 className="text-3xl font-serif font-bold text-dark mb-8">Checkout</h1>
+      <h1 className="text-3xl font-bold text-sakura-400 mb-8">Checkout</h1>
 
       {error && (
         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">
@@ -91,7 +91,7 @@ function CheckoutPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Shipping Form */}
           <div className="lg:col-span-2 bg-white border border-sakura-100 rounded-xl p-6">
-            <h2 className="font-serif font-bold text-lg text-dark mb-4">
+            <h2 className="font-bold text-lg text-sakura-400 mb-4">
               Shipping Information
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
