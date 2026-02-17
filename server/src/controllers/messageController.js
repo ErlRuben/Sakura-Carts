@@ -17,12 +17,38 @@ const createMessage = async (req, res, next) => {
 // GET /api/messages - Get all messages (admin)
 const getMessages = async (req, res, next) => {
   try {
-    const { type } = req.query;
+    const { type, archived, month, year } = req.query;
     const filter = {};
     if (type) filter.type = type;
+    filter.archived = archived === 'true' ? true : { $ne: true };
+
+    if (month && year) {
+      const m = parseInt(month, 10);
+      const y = parseInt(year, 10);
+      filter.createdAt = { $gte: new Date(y, m - 1, 1), $lt: new Date(y, m, 1) };
+    } else if (year) {
+      const y = parseInt(year, 10);
+      filter.createdAt = { $gte: new Date(y, 0, 1), $lt: new Date(y + 1, 0, 1) };
+    }
 
     const messages = await Message.find(filter).sort({ createdAt: -1 });
     res.json(messages);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// PATCH /api/messages/:id/archive - Toggle archived status (admin)
+const archiveMessage = async (req, res, next) => {
+  try {
+    const message = await Message.findById(req.params.id);
+    if (!message) {
+      res.status(404);
+      throw new Error('Message not found');
+    }
+    message.archived = !message.archived;
+    await message.save();
+    res.json(message);
   } catch (error) {
     next(error);
   }
@@ -160,4 +186,4 @@ const deleteMyMessage = async (req, res, next) => {
   }
 };
 
-module.exports = { createMessage, getMessages, getMyMessages, toggleRead, replyToMessage, replyToMyMessage, deleteMessage, deleteMyMessage, updateMessageStatus };
+module.exports = { createMessage, getMessages, getMyMessages, toggleRead, replyToMessage, replyToMyMessage, deleteMessage, deleteMyMessage, updateMessageStatus, archiveMessage };

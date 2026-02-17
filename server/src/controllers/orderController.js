@@ -107,7 +107,7 @@ const getOrders = async (req, res, next) => {
     if (status) filter.status = status;
 
     // Filter by archived status (default: show non-archived)
-    filter.archived = archived === 'true';
+    filter.archived = archived === 'true' ? true : { $ne: true };
 
     // Filter by month and year
     if (month && year) {
@@ -265,6 +265,56 @@ const deleteOrder = async (req, res, next) => {
   }
 };
 
+// PATCH /api/orders/:id/cancel
+const cancelOrder = async (req, res, next) => {
+  try {
+    const order = await Order.findById(req.params.id);
+    if (!order) {
+      res.status(404);
+      throw new Error('Order not found');
+    }
+
+    if (!order.user.equals(req.user._id)) {
+      res.status(403);
+      throw new Error('Not authorized to cancel this order');
+    }
+
+    if (order.status !== 'pending') {
+      res.status(400);
+      throw new Error('Only pending orders can be cancelled');
+    }
+
+    // Restore stock for each item
+    await Promise.all(
+      order.items.map((item) =>
+        Product.findByIdAndUpdate(item.product, { $inc: { stock: item.quantity } })
+      )
+    );
+
+    order.status = 'cancelled';
+    const updated = await order.save();
+
+    // Post cancellation reply to the order's chat message (non-critical)
+    const orderTag = `Order #${order._id.toString().slice(-8)}`;
+    try {
+      const orderMessage = await Message.findOne({ type: 'order', subject: orderTag });
+      if (orderMessage) {
+        orderMessage.replies.push({
+          text: `Your ${orderTag} has been cancelled at your request.`,
+          adminName: 'Sakura Carts',
+        });
+        await orderMessage.save();
+      }
+    } catch (msgError) {
+      console.error('Failed to post cancellation message:', msgError);
+    }
+
+    res.json(updated);
+  } catch (error) {
+    next(error);
+  }
+};
+
 // GET /api/orders/export
 const exportOrders = async (req, res, next) => {
   try {
@@ -288,4 +338,5 @@ module.exports = {
   updateOrder,
   deleteOrder,
   exportOrders,
+  cancelOrder,
 };

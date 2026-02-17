@@ -38,6 +38,7 @@ const messageSchema = new mongoose.Schema(
     },
     // Admin tracking
     read: { type: Boolean, default: false },
+    archived: { type: Boolean, default: false },
   },
   { timestamps: true }
 );

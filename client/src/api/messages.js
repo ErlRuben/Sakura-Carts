@@ -19,4 +19,5 @@ export const replyToMessage = (id, text) => api.post(`/messages/${id}/reply`, { 
 export const deleteMessage = (id) => api.delete(`/messages/${id}`);
 export const replyToMyMessage = (id, text) => api.post(`/messages/mine/${id}/reply`, { text });
 export const deleteMyMessage = (id) => api.delete(`/messages/mine/${id}`);
+export const archiveMessage = (id) => api.patch(`/messages/${id}/archive`);
 export const updateMessageStatus = (id, status) => api.patch(`/messages/${id}/status`, { status });

@@ -13,6 +13,7 @@ const {
   deleteMessage,
   deleteMyMessage,
   updateMessageStatus,
+  archiveMessage,
 } = require('../controllers/messageController');
 
 const submitLimiter = rateLimit({
@@ -26,6 +27,7 @@ const submitLimiter = rateLimit({
 router.post('/', submitLimiter, uploadMessages.array('attachments', 5), createMessage);
 router.get('/', protect, requireAdmin, getMessages);
 router.get('/mine', protect, getMyMessages);
+router.patch('/:id/archive', protect, requireAdmin, archiveMessage);
 router.patch('/:id/read', protect, requireAdmin, toggleRead);
 router.patch('/:id/status', protect, requireAdmin, updateMessageStatus);
 router.post('/:id/reply', protect, requireAdmin, replyToMessage);

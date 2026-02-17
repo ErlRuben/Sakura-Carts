@@ -11,6 +11,7 @@ const {
   updateOrder,
   deleteOrder,
   exportOrders,
+  cancelOrder,
 } = require('../controllers/orderController');
 
 router.post('/', protect, createOrder);
@@ -18,6 +19,7 @@ router.get('/', protect, requireAdmin, getOrders);
 router.get('/export', protect, requireAdmin, exportOrders);
 router.get('/my-orders', protect, getMyOrders);
 router.get('/:id', protect, getOrderById);
+router.patch('/:id/cancel', protect, cancelOrder);
 router.patch('/:id/status', protect, requireAdmin, updateOrderStatus);
 router.patch('/:id/archive', protect, requireAdmin, archiveOrder);
 router.put('/:id', protect, requireAdmin, updateOrder);

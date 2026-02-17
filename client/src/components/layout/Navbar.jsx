@@ -71,8 +71,10 @@ function Navbar() {
             <div className="hidden md:flex items-center gap-1">
               {isAuthenticated ? (
                 <>
-                  {isAdmin && (
+                  {isAdmin ? (
                     <NavLink to="/admin" className={linkClass}>Admin</NavLink>
+                  ) : (
+                    <NavLink to="/my-orders" className={linkClass}>My Orders</NavLink>
                   )}
                   <button
                     onClick={handleLogout}
@@ -114,8 +116,10 @@ function Navbar() {
             <div className="flex items-center gap-1 overflow-x-auto scrollbar-hide pt-1">
               {isAuthenticated ? (
                 <>
-                  {isAdmin && (
+                  {isAdmin ? (
                     <NavLink to="/admin" className={linkClass} onClick={() => setMobileOpen(false)}>Admin</NavLink>
+                  ) : (
+                    <NavLink to="/my-orders" className={linkClass} onClick={() => setMobileOpen(false)}>My Orders</NavLink>
                   )}
                   <button
                     onClick={handleLogout}

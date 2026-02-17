@@ -10,7 +10,7 @@ const statusColors = {
   unavailable: 'bg-red-100 text-red-800',
 };
 
-function RequestTable({ requests, onUpdate }) {
+function RequestTable({ requests, onUpdate, onArchive }) {
   const [expanded, setExpanded] = useState(null);
   const [replyingTo, setReplyingTo] = useState(null);
   const [replyText, setReplyText] = useState('');
@@ -140,6 +140,17 @@ function RequestTable({ requests, onUpdate }) {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                     </svg>
                   </button>
+                  {onArchive && (
+                    <button
+                      onClick={() => onArchive(req._id)}
+                      title={req.archived ? 'Unarchive' : 'Archive'}
+                      className={`p-1.5 transition-colors ${req.archived ? 'text-sakura-400 hover:text-sakura-600' : 'text-gray-400 hover:text-sakura-400'}`}
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+                      </svg>
+                    </button>
+                  )}
                   <button
                     onClick={() => handleDelete(req._id)}
                     title="Delete request"

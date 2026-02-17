@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { getProducts, deleteProduct } from '../api/products';
 import { getOrders, archiveOrder, deleteOrder, updateOrder, exportOrders } from '../api/orders';
-import { getMessages } from '../api/messages';
+import { getMessages, archiveMessage } from '../api/messages';
 import ProductForm from '../components/admin/ProductForm';
 import ProductTable from '../components/admin/ProductTable';
 import OrderTable from '../components/admin/OrderTable';
@@ -17,13 +17,25 @@ function AdminPage() {
   const [tab, setTab] = useState('products');
   const [products, setProducts] = useState([]);
   const [orders, setOrders] = useState([]);
-  const [messages, setMessages] = useState([]);
+  const [requests, setRequests] = useState([]);
+  const [contacts, setContacts] = useState([]);
   const [editProduct, setEditProduct] = useState(null);
   const [showForm, setShowForm] = useState(false);
+
   // Order filters
   const [orderMonth, setOrderMonth] = useState('');
   const [orderYear, setOrderYear] = useState('');
   const [showArchived, setShowArchived] = useState(false);
+
+  // Request filters
+  const [reqMonth, setReqMonth] = useState('');
+  const [reqYear, setReqYear] = useState('');
+  const [showArchivedReqs, setShowArchivedReqs] = useState(false);
+
+  // Contact filters
+  const [contactMonth, setContactMonth] = useState('');
+  const [contactYear, setContactYear] = useState('');
+  const [showArchivedContacts, setShowArchivedContacts] = useState(false);
 
   const fetchProducts = () => {
     getProducts({ limit: 100 })
@@ -39,32 +51,50 @@ function AdminPage() {
       .then((res) => setOrders(res.data.orders))
       .catch(console.error);
   };
-  // Always points to the latest fetchOrders so the polling interval
-  // picks up filter changes instead of calling a stale closure.
-  const fetchOrdersRef = useRef(fetchOrders);
-  fetchOrdersRef.current = fetchOrders;
 
-  const fetchMessages = () => {
-    getMessages()
-      .then((res) => setMessages(res.data))
+  const fetchRequests = () => {
+    const params = { type: 'request', archived: showArchivedReqs };
+    if (reqMonth) params.month = reqMonth;
+    if (reqYear) params.year = reqYear;
+    getMessages(params)
+      .then((res) => setRequests(res.data))
       .catch(console.error);
   };
+
+  const fetchContacts = () => {
+    const params = { type: 'contact', archived: showArchivedContacts };
+    if (contactMonth) params.month = contactMonth;
+    if (contactYear) params.year = contactYear;
+    getMessages(params)
+      .then((res) => setContacts(res.data))
+      .catch(console.error);
+  };
+
+  // Refs so polling intervals pick up latest filter values
+  const fetchOrdersRef = useRef(fetchOrders);
+  fetchOrdersRef.current = fetchOrders;
+  const fetchRequestsRef = useRef(fetchRequests);
+  fetchRequestsRef.current = fetchRequests;
+  const fetchContactsRef = useRef(fetchContacts);
+  fetchContactsRef.current = fetchContacts;
 
   useEffect(() => {
     fetchProducts();
     fetchOrders();
-    fetchMessages();
+    fetchRequests();
+    fetchContacts();
     const interval = setInterval(() => {
       fetchOrdersRef.current();
-      fetchMessages();
+      fetchRequestsRef.current();
+      fetchContactsRef.current();
     }, 15000);
     return () => clearInterval(interval);
   }, []);
 
-  // Re-fetch orders when filters change
-  useEffect(() => {
-    fetchOrders();
-  }, [orderMonth, orderYear, showArchived]);
+  // Re-fetch when filters change
+  useEffect(() => { fetchOrders(); }, [orderMonth, orderYear, showArchived]);
+  useEffect(() => { fetchRequests(); }, [reqMonth, reqYear, showArchivedReqs]);
+  useEffect(() => { fetchContacts(); }, [contactMonth, contactYear, showArchivedContacts]);
 
   const handleEdit = (product) => {
     setEditProduct(product);
@@ -136,12 +166,34 @@ function AdminPage() {
     }
   };
 
+  const handleArchiveRequest = async (id) => {
+    try {
+      await archiveMessage(id);
+      fetchRequests();
+    } catch (err) {
+      console.error('Failed to archive request:', err);
+    }
+  };
+
+  const handleArchiveContact = async (id) => {
+    try {
+      await archiveMessage(id);
+      fetchContacts();
+    } catch (err) {
+      console.error('Failed to archive contact:', err);
+    }
+  };
+
   // Generate year options (current year down to 2024)
   const currentYear = new Date().getFullYear();
   const yearOptions = [];
   for (let y = currentYear; y >= 2024; y--) {
     yearOptions.push(y);
   }
+
+  // Unread badge counts (from currently fetched non-archived data)
+  const unreadRequests = requests.filter((r) => !r.read).length;
+  const unreadContacts = contacts.filter((c) => !c.read).length;
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -177,10 +229,10 @@ function AdminPage() {
               : 'text-gray-600 hover:text-sakura-400'
           }`}
         >
-          Requests ({messages.filter((m) => m.type === 'request').length})
-          {messages.filter((m) => m.type === 'request' && !m.read).length > 0 && (
+          Requests ({requests.length})
+          {unreadRequests > 0 && (
             <span className="absolute -top-1 -right-1 bg-sakura-400 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
-              {messages.filter((m) => m.type === 'request' && !m.read).length}
+              {unreadRequests}
             </span>
           )}
         </button>
@@ -192,10 +244,10 @@ function AdminPage() {
               : 'text-gray-600 hover:text-sakura-400'
           }`}
         >
-          Contacts ({messages.filter((m) => m.type === 'contact').length})
-          {messages.filter((m) => m.type === 'contact' && !m.read).length > 0 && (
+          Contacts ({contacts.length})
+          {unreadContacts > 0 && (
             <span className="absolute -top-1 -right-1 bg-sakura-400 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
-              {messages.filter((m) => m.type === 'contact' && !m.read).length}
+              {unreadContacts}
             </span>
           )}
         </button>
@@ -290,8 +342,8 @@ function AdminPage() {
           <div className="bg-white border border-sakura-100 rounded-xl overflow-hidden">
             <OrderTable
               orders={orders}
-              messages={messages}
-              onStatusUpdate={() => { fetchOrders(); fetchMessages(); }}
+              messages={[...requests, ...contacts]}
+              onStatusUpdate={() => { fetchOrders(); fetchRequests(); fetchContacts(); }}
               onArchive={handleArchiveOrder}
               onDelete={handleDeleteOrder}
               onEdit={handleUpdateOrder}
@@ -300,23 +352,113 @@ function AdminPage() {
         </div>
       )}
 
-      {/* Contacts Tab */}
-      {tab === 'contacts' && (
-        <div className="bg-white border border-sakura-100 rounded-xl overflow-hidden">
-          <ContactTable
-            contacts={messages.filter((m) => m.type === 'contact')}
-            onUpdate={fetchMessages}
-          />
+      {/* Requests Tab */}
+      {tab === 'requests' && (
+        <div className="space-y-4">
+          {/* Filter bar */}
+          <div className="flex flex-wrap items-center gap-3">
+            <select
+              value={reqMonth}
+              onChange={(e) => setReqMonth(e.target.value)}
+              className="text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-sakura-300 focus:border-sakura-400 outline-none"
+            >
+              <option value="">All Months</option>
+              {MONTHS.map((m, i) => (
+                <option key={m} value={i + 1}>{m}</option>
+              ))}
+            </select>
+            <select
+              value={reqYear}
+              onChange={(e) => setReqYear(e.target.value)}
+              className="text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-sakura-300 focus:border-sakura-400 outline-none"
+            >
+              <option value="">All Years</option>
+              {yearOptions.map((y) => (
+                <option key={y} value={y}>{y}</option>
+              ))}
+            </select>
+            <button
+              onClick={() => setShowArchivedReqs(!showArchivedReqs)}
+              className={`text-sm font-medium px-4 py-2 rounded-lg border transition-colors ${
+                showArchivedReqs
+                  ? 'bg-sakura-400 text-white border-sakura-400'
+                  : 'bg-white text-gray-600 border-gray-300 hover:border-sakura-300'
+              }`}
+            >
+              {showArchivedReqs ? 'Showing Archived' : 'Show Archived'}
+            </button>
+            {(reqMonth || reqYear) && (
+              <button
+                onClick={() => { setReqMonth(''); setReqYear(''); }}
+                className="text-xs text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                Clear filters
+              </button>
+            )}
+          </div>
+
+          <div className="bg-white border border-sakura-100 rounded-xl overflow-hidden">
+            <RequestTable
+              requests={requests}
+              onUpdate={fetchRequests}
+              onArchive={handleArchiveRequest}
+            />
+          </div>
         </div>
       )}
 
-      {/* Requests Tab */}
-      {tab === 'requests' && (
-        <div className="bg-white border border-sakura-100 rounded-xl overflow-hidden">
-          <RequestTable
-            requests={messages.filter((m) => m.type === 'request')}
-            onUpdate={fetchMessages}
-          />
+      {/* Contacts Tab */}
+      {tab === 'contacts' && (
+        <div className="space-y-4">
+          {/* Filter bar */}
+          <div className="flex flex-wrap items-center gap-3">
+            <select
+              value={contactMonth}
+              onChange={(e) => setContactMonth(e.target.value)}
+              className="text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-sakura-300 focus:border-sakura-400 outline-none"
+            >
+              <option value="">All Months</option>
+              {MONTHS.map((m, i) => (
+                <option key={m} value={i + 1}>{m}</option>
+              ))}
+            </select>
+            <select
+              value={contactYear}
+              onChange={(e) => setContactYear(e.target.value)}
+              className="text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-sakura-300 focus:border-sakura-400 outline-none"
+            >
+              <option value="">All Years</option>
+              {yearOptions.map((y) => (
+                <option key={y} value={y}>{y}</option>
+              ))}
+            </select>
+            <button
+              onClick={() => setShowArchivedContacts(!showArchivedContacts)}
+              className={`text-sm font-medium px-4 py-2 rounded-lg border transition-colors ${
+                showArchivedContacts
+                  ? 'bg-sakura-400 text-white border-sakura-400'
+                  : 'bg-white text-gray-600 border-gray-300 hover:border-sakura-300'
+              }`}
+            >
+              {showArchivedContacts ? 'Showing Archived' : 'Show Archived'}
+            </button>
+            {(contactMonth || contactYear) && (
+              <button
+                onClick={() => { setContactMonth(''); setContactYear(''); }}
+                className="text-xs text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                Clear filters
+              </button>
+            )}
+          </div>
+
+          <div className="bg-white border border-sakura-100 rounded-xl overflow-hidden">
+            <ContactTable
+              contacts={contacts}
+              onUpdate={fetchContacts}
+              onArchive={handleArchiveContact}
+            />
+          </div>
         </div>
       )}
     </div>
