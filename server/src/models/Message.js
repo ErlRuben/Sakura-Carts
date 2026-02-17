@@ -4,7 +4,7 @@ const messageSchema = new mongoose.Schema(
   {
     type: {
       type: String,
-      enum: ['contact', 'request'],
+      enum: ['contact', 'request', 'order'],
       required: true,
     },
     name: { type: String, required: true, trim: true },
@@ -20,14 +20,22 @@ const messageSchema = new mongoose.Schema(
     referenceUrl: { type: String, trim: true },
     // Attachments
     attachments: [{ type: String }],
-    // Admin replies
+    // Replies (admin and user)
     replies: [
       {
         text: { type: String, required: true },
-        adminName: { type: String, required: true },
+        adminName: { type: String },
+        userName: { type: String },
+        isUser: { type: Boolean, default: false },
         createdAt: { type: Date, default: Date.now },
       },
     ],
+    // Request status
+    status: {
+      type: String,
+      enum: ['pending', 'reviewing', 'available', 'unavailable', 'replied', 'closed'],
+      default: 'pending',
+    },
     // Admin tracking
     read: { type: Boolean, default: false },
   },

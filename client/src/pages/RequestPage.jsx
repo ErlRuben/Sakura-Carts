@@ -1,10 +1,12 @@
 import { useState } from 'react';
+import { useAuth } from '../hooks/useAuth';
 import { sendMessage } from '../api/messages';
 
 function RequestPage() {
+  const { isAuthenticated, user } = useAuth();
   const [form, setForm] = useState({
-    name: '',
-    email: '',
+    name: user?.name || '',
+    email: user?.email || '',
     itemName: '',
     category: '',
     description: '',
@@ -48,7 +50,7 @@ function RequestPage() {
           <button
             onClick={() => {
               setSubmitted(false);
-              setForm({ name: '', email: '', itemName: '', category: '', description: '', budget: '', referenceUrl: '' });
+              setForm({ name: user?.name || '', email: user?.email || '', itemName: '', category: '', description: '', budget: '', referenceUrl: '' });
               setFiles([]);
             }}
             className="btn-primary mt-6"
@@ -83,7 +85,12 @@ function RequestPage() {
               value={form.name}
               onChange={handleChange}
               required
-              className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-sakura-300 focus:border-sakura-400 outline-none"
+              readOnly={isAuthenticated}
+              className={`w-full border border-gray-300 rounded-lg px-4 py-2.5 outline-none ${
+                isAuthenticated
+                  ? 'bg-gray-50 text-gray-500 cursor-not-allowed'
+                  : 'focus:ring-2 focus:ring-sakura-300 focus:border-sakura-400'
+              }`}
             />
           </div>
           <div>
@@ -94,7 +101,12 @@ function RequestPage() {
               value={form.email}
               onChange={handleChange}
               required
-              className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-sakura-300 focus:border-sakura-400 outline-none"
+              readOnly={isAuthenticated}
+              className={`w-full border border-gray-300 rounded-lg px-4 py-2.5 outline-none ${
+                isAuthenticated
+                  ? 'bg-gray-50 text-gray-500 cursor-not-allowed'
+                  : 'focus:ring-2 focus:ring-sakura-300 focus:border-sakura-400'
+              }`}
             />
           </div>
         </div>

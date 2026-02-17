@@ -79,6 +79,25 @@ const getMyMessages = async (req, res, next) => {
   }
 };
 
+// PATCH /api/messages/:id/status - Update request status (admin)
+const updateMessageStatus = async (req, res, next) => {
+  try {
+    const { status } = req.body;
+    const message = await Message.findByIdAndUpdate(
+      req.params.id,
+      { status },
+      { new: true }
+    );
+    if (!message) {
+      res.status(404);
+      throw new Error('Message not found');
+    }
+    res.json(message);
+  } catch (error) {
+    next(error);
+  }
+};
+
 // DELETE /api/messages/:id - Delete a message (admin)
 const deleteMessage = async (req, res, next) => {
   try {
@@ -93,4 +112,52 @@ const deleteMessage = async (req, res, next) => {
   }
 };
 
-module.exports = { createMessage, getMessages, getMyMessages, toggleRead, replyToMessage, deleteMessage };
+// POST /api/messages/mine/:id/reply - User replies to their own message
+const replyToMyMessage = async (req, res, next) => {
+  try {
+    const message = await Message.findById(req.params.id);
+    if (!message) {
+      res.status(404);
+      throw new Error('Message not found');
+    }
+    if (message.email !== req.user.email) {
+      res.status(403);
+      throw new Error('Not authorized to reply to this message');
+    }
+    const { text } = req.body;
+    if (!text || !text.trim()) {
+      res.status(400);
+      throw new Error('Reply text is required');
+    }
+    message.replies.push({
+      text: text.trim(),
+      userName: req.user.name,
+      isUser: true,
+    });
+    await message.save();
+    res.json(message);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// DELETE /api/messages/mine/:id - Delete own message (authenticated user)
+const deleteMyMessage = async (req, res, next) => {
+  try {
+    const message = await Message.findById(req.params.id);
+    if (!message) {
+      res.status(404);
+      throw new Error('Message not found');
+    }
+    if (message.email !== req.user.email) {
+      res.status(403);
+      throw new Error('Not authorized to delete this message');
+    }
+    await Message.findByIdAndDelete(req.params.id);
+    res.json({ message: 'Message deleted' });
+  } catch (error) {
+    next(error);
+  }
+};
+
+module.exports = { createMessage, getMessages, getMyMessages, toggleRead, replyToMessage, replyToMyMessage, deleteMessage, deleteMyMessage, updateMessageStatus };

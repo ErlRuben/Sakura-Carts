@@ -5,3 +5,7 @@ export const getOrders = (params) => api.get('/orders', { params });
 export const getOrder = (id) => api.get(`/orders/${id}`);
 export const updateOrderStatus = (id, status) =>
   api.patch(`/orders/${id}/status`, { status });
+export const archiveOrder = (id) => api.patch(`/orders/${id}/archive`);
+export const updateOrder = (id, data) => api.put(`/orders/${id}`, data);
+export const deleteOrder = (id) => api.delete(`/orders/${id}`);
+export const exportOrders = () => api.get('/orders/export', { responseType: 'blob' });

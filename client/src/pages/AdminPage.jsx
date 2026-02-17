@@ -1,11 +1,17 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { getProducts, deleteProduct } from '../api/products';
-import { getOrders } from '../api/orders';
+import { getOrders, archiveOrder, deleteOrder, updateOrder, exportOrders } from '../api/orders';
 import { getMessages } from '../api/messages';
 import ProductForm from '../components/admin/ProductForm';
 import ProductTable from '../components/admin/ProductTable';
 import OrderTable from '../components/admin/OrderTable';
-import MessageTable from '../components/admin/MessageTable';
+import RequestTable from '../components/admin/RequestTable';
+import ContactTable from '../components/admin/ContactTable';
+
+const MONTHS = [
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December',
+];
 
 function AdminPage() {
   const [tab, setTab] = useState('products');
@@ -14,6 +20,10 @@ function AdminPage() {
   const [messages, setMessages] = useState([]);
   const [editProduct, setEditProduct] = useState(null);
   const [showForm, setShowForm] = useState(false);
+  // Order filters
+  const [orderMonth, setOrderMonth] = useState('');
+  const [orderYear, setOrderYear] = useState('');
+  const [showArchived, setShowArchived] = useState(false);
 
   const fetchProducts = () => {
     getProducts({ limit: 100 })
@@ -22,10 +32,17 @@ function AdminPage() {
   };
 
   const fetchOrders = () => {
-    getOrders({ limit: 100 })
+    const params = { limit: 100, archived: showArchived };
+    if (orderMonth) params.month = orderMonth;
+    if (orderYear) params.year = orderYear;
+    getOrders(params)
       .then((res) => setOrders(res.data.orders))
       .catch(console.error);
   };
+  // Always points to the latest fetchOrders so the polling interval
+  // picks up filter changes instead of calling a stale closure.
+  const fetchOrdersRef = useRef(fetchOrders);
+  fetchOrdersRef.current = fetchOrders;
 
   const fetchMessages = () => {
     getMessages()
@@ -37,7 +54,17 @@ function AdminPage() {
     fetchProducts();
     fetchOrders();
     fetchMessages();
+    const interval = setInterval(() => {
+      fetchOrdersRef.current();
+      fetchMessages();
+    }, 15000);
+    return () => clearInterval(interval);
   }, []);
+
+  // Re-fetch orders when filters change
+  useEffect(() => {
+    fetchOrders();
+  }, [orderMonth, orderYear, showArchived]);
 
   const handleEdit = (product) => {
     setEditProduct(product);
@@ -64,6 +91,57 @@ function AdminPage() {
     setEditProduct(null);
     setShowForm(false);
   };
+
+  const handleArchiveOrder = async (id) => {
+    try {
+      await archiveOrder(id);
+      fetchOrders();
+    } catch (err) {
+      console.error('Failed to archive order:', err);
+    }
+  };
+
+  const handleDeleteOrder = async (id) => {
+    if (!window.confirm('Are you sure you want to permanently delete this order?')) return;
+    try {
+      await deleteOrder(id);
+      fetchOrders();
+    } catch (err) {
+      console.error('Failed to delete order:', err);
+    }
+  };
+
+  const handleUpdateOrder = async (id, data, onSuccess) => {
+    try {
+      await updateOrder(id, data);
+      fetchOrders();
+      if (onSuccess) onSuccess();
+    } catch (err) {
+      console.error('Failed to update order:', err);
+    }
+  };
+
+  const handleExportOrders = async () => {
+    try {
+      const res = await exportOrders();
+      const blob = new Blob([res.data], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `archived-orders-${new Date().toISOString().slice(0, 10)}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Failed to export orders:', err);
+    }
+  };
+
+  // Generate year options (current year down to 2024)
+  const currentYear = new Date().getFullYear();
+  const yearOptions = [];
+  for (let y = currentYear; y >= 2024; y--) {
+    yearOptions.push(y);
+  }
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -92,17 +170,32 @@ function AdminPage() {
           Orders ({orders.length})
         </button>
         <button
-          onClick={() => setTab('messages')}
+          onClick={() => setTab('requests')}
           className={`relative whitespace-nowrap px-5 py-2 rounded-md text-sm font-medium transition-colors ${
-            tab === 'messages'
+            tab === 'requests'
               ? 'bg-white text-sakura-600 shadow-sm'
               : 'text-gray-600 hover:text-sakura-400'
           }`}
         >
-          Messages ({messages.length})
-          {messages.filter((m) => !m.read).length > 0 && (
+          Requests ({messages.filter((m) => m.type === 'request').length})
+          {messages.filter((m) => m.type === 'request' && !m.read).length > 0 && (
             <span className="absolute -top-1 -right-1 bg-sakura-400 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
-              {messages.filter((m) => !m.read).length}
+              {messages.filter((m) => m.type === 'request' && !m.read).length}
+            </span>
+          )}
+        </button>
+        <button
+          onClick={() => setTab('contacts')}
+          className={`relative whitespace-nowrap px-5 py-2 rounded-md text-sm font-medium transition-colors ${
+            tab === 'contacts'
+              ? 'bg-white text-sakura-600 shadow-sm'
+              : 'text-gray-600 hover:text-sakura-400'
+          }`}
+        >
+          Contacts ({messages.filter((m) => m.type === 'contact').length})
+          {messages.filter((m) => m.type === 'contact' && !m.read).length > 0 && (
+            <span className="absolute -top-1 -right-1 bg-sakura-400 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+              {messages.filter((m) => m.type === 'contact' && !m.read).length}
             </span>
           )}
         </button>
@@ -140,15 +233,90 @@ function AdminPage() {
 
       {/* Orders Tab */}
       {tab === 'orders' && (
-        <div className="bg-white border border-sakura-100 rounded-xl overflow-hidden">
-          <OrderTable orders={orders} onStatusUpdate={fetchOrders} />
+        <div className="space-y-4">
+          {/* Filter bar */}
+          <div className="flex flex-wrap items-center gap-3">
+            <select
+              value={orderMonth}
+              onChange={(e) => setOrderMonth(e.target.value)}
+              className="text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-sakura-300 focus:border-sakura-400 outline-none"
+            >
+              <option value="">All Months</option>
+              {MONTHS.map((m, i) => (
+                <option key={m} value={i + 1}>{m}</option>
+              ))}
+            </select>
+            <select
+              value={orderYear}
+              onChange={(e) => setOrderYear(e.target.value)}
+              className="text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-sakura-300 focus:border-sakura-400 outline-none"
+            >
+              <option value="">All Years</option>
+              {yearOptions.map((y) => (
+                <option key={y} value={y}>{y}</option>
+              ))}
+            </select>
+            <button
+              onClick={() => setShowArchived(!showArchived)}
+              className={`text-sm font-medium px-4 py-2 rounded-lg border transition-colors ${
+                showArchived
+                  ? 'bg-sakura-400 text-white border-sakura-400'
+                  : 'bg-white text-gray-600 border-gray-300 hover:border-sakura-300'
+              }`}
+            >
+              {showArchived ? 'Showing Archived' : 'Show Archived'}
+            </button>
+            {showArchived && (
+              <button
+                onClick={handleExportOrders}
+                className="text-sm font-medium px-4 py-2 rounded-lg border border-gray-300 bg-white text-gray-600 hover:border-sakura-300 hover:text-sakura-500 transition-colors flex items-center gap-1.5"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                Export JSON
+              </button>
+            )}
+            {(orderMonth || orderYear) && (
+              <button
+                onClick={() => { setOrderMonth(''); setOrderYear(''); }}
+                className="text-xs text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                Clear filters
+              </button>
+            )}
+          </div>
+
+          <div className="bg-white border border-sakura-100 rounded-xl overflow-hidden">
+            <OrderTable
+              orders={orders}
+              messages={messages}
+              onStatusUpdate={() => { fetchOrders(); fetchMessages(); }}
+              onArchive={handleArchiveOrder}
+              onDelete={handleDeleteOrder}
+              onEdit={handleUpdateOrder}
+            />
+          </div>
         </div>
       )}
 
-      {/* Messages Tab */}
-      {tab === 'messages' && (
+      {/* Contacts Tab */}
+      {tab === 'contacts' && (
         <div className="bg-white border border-sakura-100 rounded-xl overflow-hidden">
-          <MessageTable messages={messages} onUpdate={fetchMessages} />
+          <ContactTable
+            contacts={messages.filter((m) => m.type === 'contact')}
+            onUpdate={fetchMessages}
+          />
+        </div>
+      )}
+
+      {/* Requests Tab */}
+      {tab === 'requests' && (
+        <div className="bg-white border border-sakura-100 rounded-xl overflow-hidden">
+          <RequestTable
+            requests={messages.filter((m) => m.type === 'request')}
+            onUpdate={fetchMessages}
+          />
         </div>
       )}
     </div>

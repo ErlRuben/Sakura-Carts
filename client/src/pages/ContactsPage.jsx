@@ -1,8 +1,15 @@
 import { useState } from 'react';
+import { useAuth } from '../hooks/useAuth';
 import { sendMessage } from '../api/messages';
 
 function ContactsPage() {
-  const [form, setForm] = useState({ name: '', email: '', subject: '', message: '' });
+  const { isAuthenticated, user } = useAuth();
+  const [form, setForm] = useState({
+    name: user?.name || '',
+    email: user?.email || '',
+    subject: '',
+    message: '',
+  });
   const [files, setFiles] = useState([]);
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -37,7 +44,7 @@ function ContactsPage() {
         {/* Contact Info */}
         <div className="space-y-6">
           <div className="bg-sakura-50 rounded-xl p-6">
-            <h3 className="font-serif font-bold text-dark text-lg">Get in Touch</h3>
+            <h3 className=" font-bold text-dark text-lg">Get in Touch</h3>
             <div className="mt-4 space-y-4">
               <div className="flex items-start gap-3">
                 <svg className="w-5 h-5 text-sakura-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -72,7 +79,7 @@ function ContactsPage() {
           </div>
 
           <div className="bg-sakura-50 rounded-xl p-6">
-            <h3 className="font-serif font-bold text-dark text-lg">Follow Us</h3>
+            <h3 className="font-bold text-dark text-lg">Follow Us</h3>
             <div className="flex items-center gap-4 mt-3">
               <span className="w-10 h-10 rounded-full bg-sakura-200 flex items-center justify-center text-sakura-700 font-bold text-sm">FB</span>
               <span className="w-10 h-10 rounded-full bg-sakura-200 flex items-center justify-center text-sakura-700 font-bold text-sm">IG</span>
@@ -87,7 +94,7 @@ function ContactsPage() {
           {submitted ? (
             <div className="bg-sakura-50 rounded-2xl p-10 text-center h-full flex flex-col items-center justify-center">
               <span className="text-5xl">✉️</span>
-              <h2 className="text-xl font-serif font-bold text-dark mt-4">
+              <h2 className="text-xl font-bold text-dark mt-4">
                 Message Sent!
               </h2>
               <p className="text-gray-600 mt-2">
@@ -97,7 +104,7 @@ function ContactsPage() {
               <button
                 onClick={() => {
                   setSubmitted(false);
-                  setForm({ name: '', email: '', subject: '', message: '' });
+                  setForm({ name: user?.name || '', email: user?.email || '', subject: '', message: '' });
                   setFiles([]);
                 }}
                 className="btn-secondary mt-4"
@@ -119,7 +126,12 @@ function ContactsPage() {
                   value={form.name}
                   onChange={handleChange}
                   required
-                  className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-sakura-300 focus:border-sakura-400 outline-none"
+                  readOnly={isAuthenticated}
+                  className={`w-full border border-gray-300 rounded-lg px-4 py-2.5 outline-none ${
+                    isAuthenticated
+                      ? 'bg-gray-50 text-gray-500 cursor-not-allowed'
+                      : 'focus:ring-2 focus:ring-sakura-300 focus:border-sakura-400'
+                  }`}
                 />
               </div>
               <div>
@@ -130,7 +142,12 @@ function ContactsPage() {
                   value={form.email}
                   onChange={handleChange}
                   required
-                  className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-sakura-300 focus:border-sakura-400 outline-none"
+                  readOnly={isAuthenticated}
+                  className={`w-full border border-gray-300 rounded-lg px-4 py-2.5 outline-none ${
+                    isAuthenticated
+                      ? 'bg-gray-50 text-gray-500 cursor-not-allowed'
+                      : 'focus:ring-2 focus:ring-sakura-300 focus:border-sakura-400'
+                  }`}
                 />
               </div>
               <div>

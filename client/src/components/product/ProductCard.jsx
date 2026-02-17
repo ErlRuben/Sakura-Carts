@@ -51,14 +51,14 @@ function ProductCard({ product }) {
         <h3 className="mt-2 font-medium text-dark group-hover:text-sakura-400 transition-colors line-clamp-1">
           {product.name}
         </h3>
-        <div className="mt-2 flex items-center justify-between">
+        <div className="mt-2">
           <span className="text-lg font-bold text-sakura-600">
             {formatCurrency(product.price)}
           </span>
           <button
             onClick={handleAddToCart}
             disabled={outOfStock}
-            className={`text-sm px-3 py-1.5 rounded-lg font-medium transition-colors ${
+            className={`mt-2 w-full text-sm py-1.5 rounded-lg font-medium transition-colors ${
               outOfStock
                 ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
                 : 'bg-sakura-400 text-white hover:bg-sakura-500'

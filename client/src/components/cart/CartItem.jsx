@@ -37,11 +37,15 @@ function CartItem({ item }) {
           <button
             onClick={() => updateQuantity(item.productId, item.quantity + 1)}
             disabled={item.quantity >= item.stock}
+            title={item.quantity >= item.stock ? 'Maximum stock reached' : undefined}
             className="w-8 h-8 rounded-lg border border-gray-300 flex items-center justify-center
                        hover:bg-sakura-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
           >
             +
           </button>
+          {item.quantity >= item.stock && (
+            <span className="text-[10px] text-amber-500 font-medium">Max</span>
+          )}
         </div>
         <div className="flex items-center gap-4">
           <p className="font-bold text-dark">

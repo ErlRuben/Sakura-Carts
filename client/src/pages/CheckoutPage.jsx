@@ -1,15 +1,16 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useCart } from '../hooks/useCart';
+import { useAuth } from '../hooks/useAuth';
 import { createOrder } from '../api/orders';
 import { formatCurrency } from '../utils/formatCurrency';
 
 function CheckoutPage() {
   const { items, cartTotal, clearCart } = useCart();
-  const navigate = useNavigate();
+  const { user } = useAuth();
   const [form, setForm] = useState({
-    fullName: '',
-    email: '',
+    fullName: user?.name || '',
+    email: user?.email || '',
     address: '',
     city: '',
     postalCode: '',
@@ -102,7 +103,8 @@ function CheckoutPage() {
                   required
                   value={form.fullName}
                   onChange={(e) => setForm({ ...form, fullName: e.target.value })}
-                  className="input-field"
+                  readOnly={!!user}
+                  className={`input-field ${user ? 'bg-gray-50 text-gray-500 cursor-not-allowed' : ''}`}
                 />
               </div>
               <div>
@@ -112,7 +114,8 @@ function CheckoutPage() {
                   required
                   value={form.email}
                   onChange={(e) => setForm({ ...form, email: e.target.value })}
-                  className="input-field"
+                  readOnly={!!user}
+                  className={`input-field ${user ? 'bg-gray-50 text-gray-500 cursor-not-allowed' : ''}`}
                 />
               </div>
               <div className="md:col-span-2">
@@ -160,7 +163,7 @@ function CheckoutPage() {
 
           {/* Order Summary */}
           <div className="bg-white border border-sakura-100 rounded-xl p-6 h-fit">
-            <h2 className="font-serif font-bold text-lg text-dark mb-4">
+            <h2 className="font-bold text-lg text-dark mb-4">
               Order Summary
             </h2>
             <div className="space-y-3 mb-4">

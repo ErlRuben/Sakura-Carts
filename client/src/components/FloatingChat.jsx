@@ -1,36 +1,100 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { getMyMessages } from '../api/messages';
+import { getMyMessages, replyToMyMessage, deleteMyMessage } from '../api/messages';
 
 function FloatingChat() {
   const { isAuthenticated, isAdmin } = useAuth();
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
   const [expanded, setExpanded] = useState(null);
+  const [replyText, setReplyText] = useState({});
+  const [replying, setReplying] = useState(null);
+  const [seenReplies, setSeenReplies] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('sc_seen_replies') || '{}'); }
+    catch { return {}; }
+  });
+
+  const markSeen = (msgId, adminCount) => {
+    const updated = { ...seenReplies, [msgId]: adminCount };
+    setSeenReplies(updated);
+    localStorage.setItem('sc_seen_replies', JSON.stringify(updated));
+  };
 
   const fetchMessages = async () => {
-    setLoading(true);
     try {
       const { data } = await getMyMessages();
       setMessages(data);
     } catch (err) {
       console.error('Failed to load messages:', err);
-    } finally {
-      setLoading(false);
     }
   };
 
+  // Initial load with spinner
   useEffect(() => {
-    if (open && isAuthenticated && !isAdmin) {
-      fetchMessages();
-    }
+    if (!isAuthenticated || isAdmin) return;
+    setLoading(true);
+    getMyMessages()
+      .then(({ data }) => setMessages(data))
+      .catch((err) => console.error('Failed to load messages:', err))
+      .finally(() => setLoading(false));
+  }, [isAuthenticated, isAdmin]);
+
+  // Background polling (keeps badge count current even when closed)
+  useEffect(() => {
+    if (!isAuthenticated || isAdmin) return;
+    const interval = setInterval(fetchMessages, 15000);
+    return () => clearInterval(interval);
+  }, [isAuthenticated, isAdmin]);
+
+  // Immediate refresh whenever chat is opened
+  useEffect(() => {
+    if (open && isAuthenticated && !isAdmin) fetchMessages();
   }, [open, isAuthenticated, isAdmin]);
 
   // Don't render for guests or admins
   if (!isAuthenticated || isAdmin) return null;
 
-  const replyCount = messages.reduce((sum, m) => sum + (m.replies?.length || 0), 0);
+  const newReplyCount = messages.reduce((sum, m) => {
+    const adminReplies = (m.replies || []).filter((r) => !r.isUser).length;
+    return sum + Math.max(0, adminReplies - (seenReplies[m._id] || 0));
+  }, 0);
+
+  const getOrderStatus = (msg) => {
+    if (msg.type !== 'order' || !msg.replies?.length) return null;
+    const adminReplies = msg.replies.filter((r) => !r.isUser);
+    const combined = adminReplies.map((r) => r.text).join(' ');
+    if (combined.includes('has been delivered')) return 'delivered';
+    if (combined.includes('has been cancelled')) return 'cancelled';
+    return null;
+  };
+
+  const handleDeleteChat = async (id) => {
+    try {
+      await deleteMyMessage(id);
+      setMessages((prev) => prev.filter((m) => m._id !== id));
+      setExpanded(null);
+    } catch (err) {
+      console.error('Failed to delete message:', err);
+    }
+  };
+
+  const handleSendReply = async (id) => {
+    const text = (replyText[id] || '').trim();
+    if (!text) return;
+    setReplying(id);
+    try {
+      const { data } = await replyToMyMessage(id, text);
+      setMessages((prev) => prev.map((m) => (m._id === id ? data : m)));
+      setReplyText((prev) => ({ ...prev, [id]: '' }));
+    } catch (err) {
+      console.error('Failed to send reply:', err);
+    } finally {
+      setReplying(null);
+    }
+  };
 
   return (
     <>
@@ -48,9 +112,9 @@ function FloatingChat() {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
           </svg>
         )}
-        {!open && replyCount > 0 && (
+        {!open && newReplyCount > 0 && (
           <span className="absolute -top-1 -right-1 bg-green-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
-            {replyCount}
+            {newReplyCount}
           </span>
         )}
       </button>
@@ -88,26 +152,54 @@ function FloatingChat() {
                 {messages.map((msg) => (
                   <div key={msg._id}>
                     {/* Message header */}
-                    <button
-                      onClick={() => setExpanded(expanded === msg._id ? null : msg._id)}
-                      className="w-full text-left px-4 py-3 hover:bg-sakura-50/30 transition-colors"
+                    <div
+                      onClick={() => {
+                        const next = expanded === msg._id ? null : msg._id;
+                        setExpanded(next);
+                        if (next) {
+                          const adminCount = (msg.replies || []).filter((r) => !r.isUser).length;
+                          markSeen(msg._id, adminCount);
+                        }
+                      }}
+                      className="w-full text-left px-4 py-3 hover:bg-sakura-50/30 transition-colors cursor-pointer"
                     >
                       <div className="flex items-center gap-2">
-                        <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${
+                        <span className={`flex-shrink-0 text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${
                           msg.type === 'contact'
                             ? 'bg-blue-100 text-blue-600'
+                            : msg.type === 'order'
+                            ? 'bg-green-100 text-green-600'
                             : 'bg-purple-100 text-purple-600'
                         }`}>
-                          {msg.type === 'contact' ? 'C' : 'R'}
+                          {msg.type === 'contact' ? 'C' : msg.type === 'order' ? 'O' : 'R'}
                         </span>
                         <span className="text-sm font-medium text-dark truncate flex-1">
-                          {msg.type === 'contact' ? msg.subject : msg.itemName}
+                          {msg.type === 'contact' || msg.type === 'order' ? msg.subject : msg.itemName}
                         </span>
-                        {msg.replies && msg.replies.length > 0 && (
-                          <span className="flex-shrink-0 w-5 h-5 bg-green-100 text-green-600 text-[10px] font-bold rounded-full flex items-center justify-center">
-                            {msg.replies.length}
-                          </span>
-                        )}
+                        {(() => {
+                          const adminReplies = (msg.replies || []).filter((r) => !r.isUser).length;
+                          const unseen = Math.max(0, adminReplies - (seenReplies[msg._id] || 0));
+                          if (unseen > 0) return (
+                            <span className="flex-shrink-0 w-5 h-5 bg-green-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                              {unseen}
+                            </span>
+                          );
+                          if (adminReplies > 0) return (
+                            <span className="flex-shrink-0 w-5 h-5 bg-green-100 text-green-600 text-[10px] font-bold rounded-full flex items-center justify-center">
+                              {adminReplies}
+                            </span>
+                          );
+                          return null;
+                        })()}
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handleDeleteChat(msg._id); }}
+                          className="flex-shrink-0 w-5 h-5 flex items-center justify-center text-gray-300 hover:text-red-400 transition-colors"
+                          title="Delete"
+                        >
+                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
                         <svg
                           className={`w-3.5 h-3.5 text-gray-400 flex-shrink-0 transition-transform ${expanded === msg._id ? 'rotate-180' : ''}`}
                           fill="none" stroke="currentColor" viewBox="0 0 24 24"
@@ -118,14 +210,14 @@ function FloatingChat() {
                       <div className="text-[11px] text-gray-400 mt-0.5 ml-7">
                         {new Date(msg.createdAt).toLocaleDateString()}
                       </div>
-                    </button>
+                    </div>
 
                     {/* Expanded content */}
                     {expanded === msg._id && (
                       <div className="px-4 pb-3 space-y-2">
                         {/* Original message */}
                         <div className="bg-gray-50 rounded-lg p-2.5 text-xs space-y-1">
-                          {msg.type === 'contact' ? (
+                          {msg.type === 'contact' || msg.type === 'order' ? (
                             <p className="text-gray-600 whitespace-pre-wrap">{msg.message}</p>
                           ) : (
                             <>
@@ -152,23 +244,65 @@ function FloatingChat() {
                           )}
                         </div>
 
-                        {/* Admin replies */}
+                        {/* Replies thread */}
                         {msg.replies && msg.replies.length > 0 ? (
                           msg.replies.map((reply, i) => (
-                            <div key={i} className="bg-sakura-50/60 border border-sakura-100 rounded-lg p-2.5">
-                              <div className="flex items-center justify-between mb-1">
-                                <span className="text-[10px] font-semibold text-sakura-500">{reply.adminName}</span>
-                                <span className="text-[10px] text-gray-400">
-                                  {new Date(reply.createdAt).toLocaleDateString()}
-                                </span>
+                            reply.isUser ? (
+                              /* User reply — right aligned */
+                              <div key={i} className="flex justify-end">
+                                <div className="max-w-[85%] bg-sakura-400 rounded-lg rounded-tr-none p-2.5">
+                                  <p className="text-xs text-white whitespace-pre-wrap">{reply.text}</p>
+                                  <p className="text-[10px] text-white/70 mt-1 text-right">
+                                    {new Date(reply.createdAt).toLocaleDateString()}
+                                  </p>
+                                </div>
                               </div>
-                              <p className="text-xs text-gray-700 whitespace-pre-wrap">{reply.text}</p>
-                            </div>
+                            ) : (
+                              /* Admin reply — left aligned */
+                              <div key={i} className="bg-sakura-50/60 border border-sakura-100 rounded-lg p-2.5">
+                                <div className="flex items-center justify-between mb-1">
+                                  <span className="text-[10px] font-semibold text-sakura-500">{reply.adminName}</span>
+                                  <span className="text-[10px] text-gray-400">
+                                    {new Date(reply.createdAt).toLocaleDateString()}
+                                  </span>
+                                </div>
+                                <p className="text-xs text-gray-700 whitespace-pre-wrap">{reply.text}</p>
+                              </div>
+                            )
                           ))
                         ) : (
                           <div className="text-center py-2 text-[11px] text-gray-400">
                             No reply yet — we'll get back to you soon!
                           </div>
+                        )}
+
+                        {/* User reply input */}
+                        <div className="flex gap-2 pt-1">
+                          <input
+                            type="text"
+                            value={replyText[msg._id] || ''}
+                            onChange={(e) => setReplyText((prev) => ({ ...prev, [msg._id]: e.target.value }))}
+                            onKeyDown={(e) => { if (e.key === 'Enter') handleSendReply(msg._id); }}
+                            placeholder="Type a reply…"
+                            className="flex-1 min-w-0 text-xs border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:border-sakura-300"
+                          />
+                          <button
+                            onClick={() => handleSendReply(msg._id)}
+                            disabled={replying === msg._id}
+                            className="flex-shrink-0 px-3 py-2 bg-sakura-400 hover:bg-sakura-500 disabled:opacity-50 text-white text-xs font-medium rounded-lg transition-colors"
+                          >
+                            Send
+                          </button>
+                        </div>
+
+                        {/* Order Again button for cancelled orders */}
+                        {getOrderStatus(msg) === 'cancelled' && (
+                          <button
+                            onClick={() => { setOpen(false); navigate('/'); }}
+                            className="w-full text-xs font-medium py-2 rounded-lg bg-sakura-50 text-sakura-500 hover:bg-sakura-100 transition-colors"
+                          >
+                            Order Again
+                          </button>
                         )}
                       </div>
                     )}

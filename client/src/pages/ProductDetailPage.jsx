@@ -24,7 +24,7 @@ function ProductDetailPage() {
   if (!product) {
     return (
       <div className="max-w-7xl mx-auto px-4 py-16 text-center">
-        <h2 className="text-2xl font-serif font-bold text-dark">Product not found</h2>
+        <h2 className="text-2xl font-bold text-dark">Product not found</h2>
         <Link to="/" className="text-sakura-400 hover:text-sakura-500 mt-4 inline-block">
           Back to Shop
         </Link>
@@ -70,7 +70,7 @@ function ProductDetailPage() {
           <span className="text-sm font-medium text-sakura-400 bg-sakura-50 px-3 py-1 rounded-full">
             {product.category}
           </span>
-          <h1 className="text-3xl font-serif font-bold text-dark mt-4">
+          <h1 className="text-3xl font-bold text-dark mt-4">
             {product.name}
           </h1>
           <p className="text-3xl font-bold text-sakura-400 mt-4">
@@ -98,7 +98,9 @@ function ProductDetailPage() {
                 <span className="w-12 text-center font-medium text-lg">{quantity}</span>
                 <button
                   onClick={() => setQuantity((q) => Math.min(product.stock, q + 1))}
-                  className="w-10 h-10 rounded-lg border border-gray-300 flex items-center justify-center hover:bg-sakura-50"
+                  disabled={quantity >= product.stock}
+                  title={quantity >= product.stock ? 'Maximum stock reached' : undefined}
+                  className="w-10 h-10 rounded-lg border border-gray-300 flex items-center justify-center hover:bg-sakura-50 disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   +
                 </button>

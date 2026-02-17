@@ -86,7 +86,7 @@ function ProductForm({ editProduct, onSave, onCancel }) {
 
   return (
     <form onSubmit={handleSubmit} className="bg-white border border-sakura-100 rounded-xl p-6">
-      <h3 className="font-serif font-bold text-lg text-dark mb-4">
+      <h3 className="font-bold text-lg text-dark mb-4">
         {editProduct ? 'Edit Product' : 'Add New Product'}
       </h3>
 

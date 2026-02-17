@@ -89,7 +89,7 @@ function FAQsPage() {
       </div>
 
       <div className="mt-10 bg-sakura-50 rounded-2xl p-8 text-center">
-        <h3 className="text-lg font-serif font-bold text-dark">
+        <h3 className="text-lg font-bold text-dark">
           Still have questions?
         </h3>
         <p className="text-gray-600 mt-2">

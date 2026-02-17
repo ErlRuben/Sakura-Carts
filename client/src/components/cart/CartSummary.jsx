@@ -7,7 +7,7 @@ function CartSummary() {
 
   return (
     <div className="bg-white border border-sakura-100 rounded-xl p-6">
-      <h3 className="font-serif font-bold text-lg text-dark mb-4">
+      <h3 className="font-bold text-lg text-dark mb-4">
         Order Summary
       </h3>
       <div className="space-y-2 mb-4">

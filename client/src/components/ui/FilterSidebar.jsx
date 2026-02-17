@@ -5,7 +5,7 @@ function FilterSidebar({ selectedCategory, onCategoryChange, sort, onSortChange 
     <div className="space-y-6">
       {/* Categories */}
       <div>
-        <h3 className="font-serif font-bold text-dark mb-3">Categories</h3>
+        <h3 className="font-bold text-dark mb-3">Categories</h3>
         <div className="flex md:flex-col gap-2 overflow-x-auto pb-2 md:pb-0 scrollbar-hide">
           <button
             onClick={() => onCategoryChange('')}
@@ -35,7 +35,7 @@ function FilterSidebar({ selectedCategory, onCategoryChange, sort, onSortChange 
 
       {/* Sort */}
       <div>
-        <h3 className="font-serif font-bold text-dark mb-3">Sort By</h3>
+        <h3 className="font-bold text-dark mb-3">Sort By</h3>
         <select
           value={sort}
           onChange={(e) => onSortChange(e.target.value)}
